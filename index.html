@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Costear una brigada · SIFOP-IF</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;450;500;600;700&display=swap');
+:root{
+  --ink:#16231D; --muted:#5C6D63; --faint:#909E94; --line:#DBE3DD; --line-2:#EBEFEB;
+  --canvas:#EAEEE9; --surface:#FFFFFF; --soft:#F5F8F4;
+  --forest:#1B5E4F; --forest-d:#103A31; --forest-l:#E5EFEA;
+  --ember:#C2410C; --ember-l:#FBEAE1; --good:#15803D; --gold:#B7791F; --gold-l:#FBF1DC;
+  --ui:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif; --disp:'Fraunces',Georgia,serif;
+  --r:14px; --sh:0 24px 60px -28px rgba(16,40,30,.4),0 4px 14px -6px rgba(16,40,30,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--ui);color:var(--ink);background:var(--canvas);-webkit-font-smoothing:antialiased;line-height:1.5;font-size:15px;padding:34px 18px 80px}
+.tnum{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit;font-size:15px;color:var(--ink)}
+:focus-visible{outline:2.5px solid var(--forest);outline-offset:2px;border-radius:8px}
+::selection{background:#cdeee0}
+
+.wrap{max-width:600px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-left:2px}
+.brand .mk{width:30px;height:30px;border-radius:8px;background:linear-gradient(140deg,#2E7d6a,#15b88a);display:flex;align-items:center;justify-content:center}
+.brand .mk svg{width:17px;height:17px}
+.brand b{font-family:var(--disp);font-weight:600;font-size:16px;letter-spacing:.2px}
+.brand span{font-size:12px;color:var(--muted)}
+
+h1{font-family:var(--disp);font-weight:600;font-size:30px;letter-spacing:-.018em;margin-bottom:4px}
+.lede{font-size:14.5px;color:var(--muted);margin-bottom:20px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+
+/* ===== cost hero ===== */
+.cost{background:var(--forest-d);color:#fff;padding:22px 24px}
+.cost .lbl{font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:#9CCDBD;font-weight:700}
+.cost .big{font-family:var(--disp);font-weight:600;font-size:46px;letter-spacing:-.025em;line-height:1.04;margin-top:3px;transition:opacity .12s}
+.cost .big small{font-size:18px;color:#9CCDBD;font-weight:500}
+.cost .split{display:flex;gap:8px;margin-top:15px;flex-wrap:wrap}
+.cost .seg{flex:1;min-width:120px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.13);border-radius:10px;padding:9px 12px}
+.cost .seg .k{font-size:10.5px;color:#9CCDBD;font-weight:600;letter-spacing:.3px}
+.cost .seg .v{font-weight:650;font-size:16px;margin-top:1px}
+.cost .meta{margin-top:13px;font-size:12px;color:#A9D7C7;display:flex;align-items:center;gap:7px}
+.cost .meta svg{width:13px;height:13px;opacity:.8}
+.cost .warn{margin-top:11px;display:flex;align-items:flex-start;gap:8px;background:rgba(194,65,12,.22);border:1px solid rgba(240,140,90,.4);color:#FFD9C7;font-size:12px;font-weight:500;padding:8px 11px;border-radius:9px}
+.cost .warn svg{width:14px;height:14px;flex-shrink:0;margin-top:1px}
+
+/* ===== body form ===== */
+.body{padding:20px 24px 24px}
+.field{margin-bottom:16px}
+.field>label{display:block;font-size:12px;font-weight:650;color:var(--muted);margin-bottom:6px;letter-spacing:.1px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ctrl{width:100%;height:44px;border:1px solid var(--line);border-radius:11px;background:var(--surface);padding:0 13px;font-weight:500;transition:border .12s,box-shadow .12s}
+.ctrl:hover{border-color:#BFCFC6}
+.ctrl:focus{border-color:var(--forest);box-shadow:0 0 0 3px var(--forest-l)}
+select.ctrl{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%235C6D63' stroke-width='2'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
+.ctrl.big{font-family:var(--disp);font-weight:600;font-size:17px}
+.num-in{position:relative}
+.num-in .u{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--faint);font-weight:600;pointer-events:none}
+.num-in .ctrl{text-align:right;padding-right:42px;font-variant-numeric:tabular-nums;font-weight:600}
+
+/* segmented toggles */
+.toggles{display:flex;gap:18px;flex-wrap:wrap;align-items:center;padding:2px 0 2px}
+.seg-grp{display:flex;flex-direction:column;gap:6px}
+.seg-grp .gl{font-size:11px;font-weight:650;color:var(--faint);letter-spacing:.3px}
+.segc{display:inline-flex;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:3px}
+.segc button{padding:6px 13px;font-size:13px;font-weight:600;color:var(--muted);border-radius:7px;transition:all .12s}
+.segc button.on{background:var(--surface);color:var(--forest-d);box-shadow:0 1px 3px rgba(16,40,30,.12)}
+.check{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:550;cursor:pointer;user-select:none}
+.check input{display:none}
+.check .box{width:20px;height:20px;border:1.5px solid var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;background:var(--surface);transition:all .12s}
+.check input:checked+.box{background:var(--forest);border-color:var(--forest)}
+.check .box svg{width:13px;height:13px;color:#fff;opacity:0;transition:opacity .1s}
+.check input:checked+.box svg{opacity:1}
+
+/* collapsible (dotación / bbss) */
+.fold{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--soft)}
+.fold-h{display:flex;align-items:center;gap:12px;padding:13px 15px;cursor:pointer;background:var(--surface)}
+.fold-h .ti{flex:1}
+.fold-h .ti .t{font-size:13px;font-weight:650}
+.fold-h .ti .s{font-size:12.5px;color:var(--muted);margin-top:1px}
+.fold-h .chev{width:26px;height:26px;border-radius:7px;background:var(--soft);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.fold-h .chev svg{width:14px;height:14px;color:var(--muted)}
+.fold.open .fold-h .chev{transform:rotate(180deg)}
+.fold-b{display:none;padding:6px 15px 14px;border-top:1px solid var(--line-2)}
+.fold.open .fold-b{display:block}
+
+/* dotación steppers */
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px}
+.drow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line-2)}
+.drow .nm{flex:1;font-size:13px;font-weight:500;line-height:1.2}
+.drow .nm small{color:var(--faint);font-weight:500}
+.drow.miss .nm{color:var(--ember)}
+.stp{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.stp button{width:28px;height:30px;font-size:16px;font-weight:600;color:var(--forest);background:var(--soft)}
+.stp button:hover{background:var(--forest-l)}
+.stp input{width:38px;height:30px;text-align:center;border:none;border-left:1px solid var(--line);border-right:1px solid var(--line);font-weight:650;font-variant-numeric:tabular-nums}
+.dtot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.dtot b{color:var(--ink);font-weight:650}
+
+/* bbss lines */
+.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
+.brow{display:flex;flex-direction:column;gap:4px}
+.brow label{font-size:11.5px;color:var(--muted);font-weight:500}
+.brow .num-in .ctrl{height:38px}
+
+.hint{font-size:12px;color:var(--faint);margin-top:9px;line-height:1.4}
+
+/* actions */
+.actions{display:flex;gap:10px;margin-top:22px}
+.btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;border-radius:11px;font-weight:650;font-size:14.5px;transition:background .14s,transform .05s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--forest);color:#fff}
+.btn.primary:hover{background:#17705e}
+.btn.ghost{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+.btn.ghost:hover{background:var(--soft);border-color:#BFCFC6}
+.btn svg{width:17px;height:17px}
+
+/* saved list */
+.saved{margin-top:26px}
+.saved-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;padding:0 2px}
+.saved-h .t{font-family:var(--disp);font-size:18px;font-weight:600}
+.saved-h .tot{font-size:13px;color:var(--muted)}
+.saved-h .tot b{font-family:var(--disp);font-size:17px;color:var(--forest);font-weight:600;margin-left:6px}
+.srow{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:11px 14px;margin-bottom:8px;transition:border .12s}
+.srow:hover{border-color:#BFCFC6}
+.srow .nm{flex:1}
+.srow .nm .t{font-weight:600;font-size:14px}
+.srow .nm .s{font-size:12px;color:var(--faint);margin-top:1px}
+.srow .v{font-weight:650;font-variant-numeric:tabular-nums;font-size:14.5px}
+.srow .mini{font-size:11px;color:var(--faint)}
+.srow .x{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--faint);background:var(--soft)}
+.srow .x:hover{background:var(--ember-l);color:var(--ember)}
+.srow .x svg{width:15px;height:15px}
+.srow .edit{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);background:var(--soft)}
+.srow .edit:hover{background:var(--forest-l);color:var(--forest)}
+.srow .edit svg{width:15px;height:15px}
+.export{margin-top:6px;display:flex;justify-content:flex-end}
+.export button{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--forest);padding:8px 12px;border-radius:9px}
+.export button:hover{background:var(--forest-l)}
+.export svg{width:15px;height:15px}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:11px;font-size:13.5px;font-weight:500;box-shadow:var(--sh);z-index:60;opacity:0;pointer-events:none;transition:all .25s;display:flex;align-items:center;gap:9px}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.toast svg{width:16px;height:16px;color:#7BE0BC}
+
+@media (max-width:560px){ body{padding:22px 12px 70px} h1{font-size:25px} .cost .big{font-size:38px} .dgrid,.bgrid{grid-template-columns:1fr} .row2{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 7v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-5z"/><path d="M9 12l2 2 4-4"/></svg></div>
+    <div><b>SIFOP-IF</b> &nbsp;<span>CONAF · GEPRIF</span></div>
+  </div>
+
+  <h1>Costear una brigada</h1>
+  <p class="lede">Elige el tipo, ajusta los meses y listo. Todo lo demás viene precargado — tócalo solo si cambia.</p>
+
+  <div class="card">
+    <!-- COST HERO -->
+    <div class="cost" id="cost"></div>
+
+    <!-- FORM -->
+    <div class="body">
+      <div class="field">
+        <label>Nombre o código <span style="color:var(--faint);font-weight:400">(opcional)</span></label>
+        <input class="ctrl" id="nombre" placeholder="Ej: BC-Palma-5">
+      </div>
+
+      <div class="row2">
+        <div class="field" style="margin-bottom:16px">
+          <label>Región</label>
+          <select class="ctrl" id="region"></select>
+        </div>
+        <div class="field" style="margin-bottom:16px">
+          <label>Tipo de brigada</label>
+          <select class="ctrl big" id="tipo"></select>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="toggles">
+          <div class="seg-grp"><span class="gl">Plan</span>
+            <div class="segc" id="planSeg"></div></div>
+          <div class="seg-grp"><span class="gl">Jornada</span>
+            <div class="segc" id="jornadaSeg"></div></div>
+          <div class="seg-grp"><span class="gl">&nbsp;</span>
+            <label class="check"><input type="checkbox" id="heli"><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Heliataque</label></div>
+        </div>
+      </div>
+
+      <!-- dotación fold -->
+      <div class="field">
+        <div class="fold" id="dotFold">
+          <div class="fold-h" id="dotHead">
+            <div class="ti"><div class="t">Dotación</div><div class="s" id="dotSummary"></div></div>
+            <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+          </div>
+          <div class="fold-b" id="dotBody"></div>
+        </div>
+      </div>
+
+      <!-- bbss + asig -->
+      <div class="row2">
+        <div class="field" style="margin-bottom:16px">
+          <label>Bienes y servicios / mes</label>
+          <div class="num-in"><input class="ctrl" type="number" min="0" step="1" id="bbssSimple"><span class="u">M$</span></div>
+        </div>
+        <div class="field" style="margin-bottom:16px">
+          <label>Asignación única <span style="color:var(--faint);font-weight:400">(1.er mes)</span></label>
+          <div class="num-in"><input class="ctrl" type="number" min="0" step="1" id="asig"><span class="u">M$</span></div>
+        </div>
+      </div>
+      <div class="field" style="margin-top:-6px">
+        <div class="fold" id="bbssFold">
+          <div class="fold-h" id="bbssHead">
+            <div class="ti"><div class="t">Desglosar bienes y servicios en las 14 líneas (subt. 22)</div><div class="s">Opcional — si no, usa el monto de arriba</div></div>
+            <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+          </div>
+          <div class="fold-b" id="bbssBody"></div>
+        </div>
+      </div>
+
+      <!-- meses -->
+      <div class="field" style="margin-top:4px">
+        <label>Meses operativos</label>
+        <div class="row2">
+          <div class="num-in"><input class="ctrl" type="number" min="0" max="4" step="0.1" id="m2s"><span class="u">2.° sem · sep–dic</span></div>
+          <div class="num-in"><input class="ctrl" type="number" min="0" max="8" step="0.1" id="m1s"><span class="u">1.er sem · ene–ago</span></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn ghost" id="btnReset">Limpiar</button>
+        <button class="btn primary" id="btnSave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg><span id="saveLbl">Guardar y empezar otra</span></button>
+      </div>
+      <div class="hint">Las plantillas por tipo traen una dotación y un monto de bienes y servicios de referencia. Edítalos una vez para que reflejen tu realidad.</div>
+    </div>
+  </div>
+
+  <!-- SAVED -->
+  <div class="saved" id="saved" style="display:none">
+    <div class="saved-h">
+      <span class="t">Brigadas guardadas</span>
+      <span class="tot">Total temporada <b id="savedTot">M$ 0</b></span>
+    </div>
+    <div id="savedList"></div>
+    <div class="export"><button id="btnExcel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Exportar la lista a Excel</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const fmt0=new Intl.NumberFormat('es-CL',{maximumFractionDigits:0});
+const M=v=>fmt0.format(Math.round(v||0));
+const $=s=>document.getElementById(s);
+
+/* ---- catálogos ---- */
+const REGIONES=["Arica","Tarapacá","Antofagasta","Atacama","Coquimbo","Valparaíso","Metropolitana","O'Higgins","Maule","Ñuble","Biobío","La Araucanía","Los Ríos","Los Lagos","Aysén","Magallanes"];
+const TIPOS=["Brigada de Línea","Brigada Mixta","Brigada Helitransportada","Recurso Cisterna"];
+
+const CARGOS=[
+  {k:'jb',label:'Jefe de Brigada',tarifa:'Jefe de Brigada'},
+  {k:'jc',label:'Jefe de Cuadrilla',tarifa:'Jefe de Cuadrilla'},
+  {k:'bf',label:'Brigadista Forestal',tarifa:'Brigadista Forestal'},
+  {k:'mt',label:'Op. Motosierra',sub:' (Mt)',tarifa:'Brigadista Operador de Motosierra (Mt)'},
+  {k:'mb',label:'Op. Motobomba',sub:' (Mb)',tarifa:'Brigadista Operador de Motobomba (Mb)'},
+  {k:'mv',label:'Conductor Vehículo',sub:' (Mv)',tarifa:'Brigadista Operador Conductor Vehículo (Mv)'},
+  {k:'eh',label:'Encargado Herram.',sub:' (Eh)',tarifa:'Encargado Herramientas (Eh)'},
+  {k:'apa',label:'Primeros Auxilios',sub:' (Apa)',tarifa:'Asistente de primeros auxilios (Apa)'},
+  {k:'ro',label:'Radioperador/a',sub:' (Ro)',tarifa:'Radioperador/a (Ro)'},
+  {k:'ma',label:'M. de Alimentos',sub:' (Ma)',tarifa:'M. de alimentos (Ma)'},
+  {k:'cm',label:'Conductor de Móvil',sub:' (Cm)',tarifa:'Conductor/a de Móvil (Cm)'},
+  {k:'cc',label:'Cuidador Campamento',sub:' (Cc)',tarifa:'Cuidador/a de Campamento (Cc)'},
+  {k:'sec',label:'Secretaria/Adm',tarifa:'Secretaria/Adm'},
+];
+const BBSS_LINES=[
+  ['s2201','22-01 Alimentos'],['s2202','22-02 Vestuario'],['s2203','22-03 Combustibles'],
+  ['s2204','22-04 Materiales'],['s2205','22-05 Servicios básicos'],['s2206','22-06 Mantención'],
+  ['s2207','22-07 Difusión'],['s2208','22-08 Transporte'],['s2209base','22-09 Arriendo base'],
+  ['s2209cam','22-09 Arriendo camioneta'],['s2209maq','22-09 Arriendo maquinaria'],
+  ['s2210','22-10 Seguros'],['s2211','22-11 Serv. técnicos'],['s2212','22-12 Otros'],
+];
+
+/* plantillas base (editables) */
+const TEMPLATES={
+  "Brigada de Línea":{dot:{jb:1,jc:1,bf:7,mt:1,mb:1},bbss:3500,heli:false},
+  "Brigada Mixta":{dot:{jb:1,bf:5,mb:2,mt:1,eh:1,apa:1},bbss:4000,heli:false},
+  "Brigada Helitransportada":{dot:{jb:1,jc:1,bf:5,mt:1,mb:1},bbss:3200,heli:true},
+  "Recurso Cisterna":{dot:{jb:1,bf:3,mb:1,mv:1},bbss:2500,heli:false},
+};
+
+/* tarifario real 26-27 ($ /mes) */
+const TARIFARIO=[
+ {z:"XV a X, RM y OC",j:"Diurna",c:"Brigada Estándar","Jefe de Brigada":1370394,"Jefe de Cuadrilla":1205429,"Brigadista Operador Conductor Vehículo (Mv)":1047593,"Brigadista Operador de Motosierra (Mt)":1071885,"Radioperador/a (Ro)":1071885,"Brigadista Operador de Motobomba (Mb)":1009042,"Asistente de primeros auxilios (Apa)":1009042,"Encargado Herramientas (Eh)":1009042,"M. de alimentos (Ma)":1009042,"Secretaria/Adm":960131,"Brigadista Forestal":950008,"Cuidador/a de Campamento (Cc)":935266},
+ {z:"XV a X, RM y OC",j:"Diurna",c:"Brigada Heliataque","Jefe de Brigada":1492940,"Jefe de Cuadrilla":1311478,"Brigadista Operador Conductor Vehículo (Mv)":1137858,"Brigadista Operador de Motosierra (Mt)":1164580,"Radioperador/a (Ro)":1164580,"Brigadista Operador de Motobomba (Mb)":1095452,"Asistente de primeros auxilios (Apa)":1095452,"Encargado Herramientas (Eh)":1095452,"M. de alimentos (Ma)":1095452,"Brigadista Forestal":1030515},
+ {z:"XV a X, RM y OC",j:"Nocturna",c:"Brigada Estándar","Jefe de Brigada":1541945,"Jefe de Cuadrilla":1353887,"Brigadista Operador Conductor Vehículo (Mv)":1173955,"Brigadista Operador de Motosierra (Mt)":1201648,"Radioperador/a (Ro)":1201648,"Brigadista Operador de Motobomba (Mb)":1130008,"Asistente de primeros auxilios (Apa)":1130008,"Encargado Herramientas (Eh)":1130008,"M. de alimentos (Ma)":1130008,"Brigadista Forestal":1062709},
+ {z:"PALENA, XI y XII",j:"Diurna",c:"Brigada Estándar","Jefe de Brigada":1713624,"Jefe de Cuadrilla":1243786,"Brigadista Operador Conductor Vehículo (Mv)":1199751,"Brigadista Operador de Motosierra (Mt)":1131802,"Radioperador/a (Ro)":1131802,"Brigadista Operador de Motobomba (Mb)":1068887,"Asistente de primeros auxilios (Apa)":1068887,"Encargado Herramientas (Eh)":1068887,"M. de alimentos (Ma)":1068887,"Secretaria/Adm":1016588,"Brigadista Forestal":1049163,"Cuidador/a de Campamento (Cc)":945687},
+ {z:"PALENA, XI y XII",j:"Diurna",c:"Brigada Heliataque","Jefe de Brigada":1870493,"Jefe de Cuadrilla":1353671,"Brigadista Operador Conductor Vehículo (Mv)":1305232,"Brigadista Operador de Motosierra (Mt)":1230488,"Radioperador/a (Ro)":1230488,"Brigadista Operador de Motobomba (Mb)":1161282,"Asistente de primeros auxilios (Apa)":1161282,"Encargado Herramientas (Eh)":1161282,"M. de alimentos (Ma)":1161282,"Brigadista Forestal":1139585},
+ {z:"PALENA, XI y XII",j:"Nocturna",c:"Brigada Estándar","Jefe de Brigada":1887829,"Jefe de Cuadrilla":1365815,"Brigadista Operador Conductor Vehículo (Mv)":1316889,"Brigadista Operador de Motosierra (Mt)":1241394,"Radioperador/a (Ro)":1241394,"Brigadista Operador de Motobomba (Mb)":1171493,"Asistente de primeros auxilios (Apa)":1171493,"Encargado Herramientas (Eh)":1171493,"M. de alimentos (Ma)":1171493,"Brigadista Forestal":1149578},
+];
+
+/* ---- motor ---- */
+function zonaDe(region){ return (region==='Magallanes'||region==='Aysén') ? 'PALENA, XI y XII' : 'XV a X, RM y OC'; }
+function tarifaDe(zona,jornada,heli,cargoTarifa){
+  const clase=heli?'Brigada Heliataque':'Brigada Estándar';
+  let row=TARIFARIO.find(t=>t.z===zona&&t.j===jornada&&t.c===clase);
+  if(!row && clase==='Brigada Heliataque') row=TARIFARIO.find(t=>t.z===zona&&t.j===jornada&&t.c==='Brigada Estándar'); // sin nocturna heli → cae a estándar
+  if(!row) return null;
+  let v=row[cargoTarifa];
+  if(v==null && cargoTarifa==='Secretaria/Adm') v=row['Secretaria'];
+  return v==null?null:v;
+}
+function calc(b){
+  const zona=zonaDe(b.region);
+  let jornalMensual=0, dotTotal=0; const warn=[];
+  for(const c of CARGOS){
+    const dot=Number(b.dot?.[c.k]||0); dotTotal+=dot;
+    if(dot<=0) continue;
+    const tar=tarifaDe(zona,b.jornada,b.heli,c.tarifa);
+    if(tar==null){ warn.push(c.label.trim()+' no tiene tarifa en esta zona/jornada'); continue; }
+    jornalMensual+=dot*tar/1000;
+  }
+  let bbssMensual = b.bbssMode==='detalle'
+      ? BBSS_LINES.reduce((s,[k])=>s+Number(b.lines?.[k]||0),0)
+      : Number(b.bbssSimple||0);
+  const m2s=Number(b.m2s||0), m1s=Number(b.m1s||0), asig=Number(b.asig||0);
+  const jornal=jornalMensual*(m2s+m1s);
+  const bbss=bbssMensual*(m2s+m1s)+asig;
+  return {zona,jornalMensual,bbssMensual,dotTotal,warn,
+    jornal2S:jornalMensual*m2s+0, bbss2S:bbssMensual*m2s+asig,
+    total2S:jornalMensual*m2s+bbssMensual*m2s+asig,
+    total1S:jornalMensual*m1s+bbssMensual*m1s,
+    jornal, bbss, total:jornal+bbss};
+}
+
+/* ---- estado ---- */
+let b={}, editId=null, saved=[], sid=1;
+function loadTemplate(tipo){
+  const t=TEMPLATES[tipo]||TEMPLATES["Brigada de Línea"];
+  b.dot=Object.assign({},t.dot); b.bbssSimple=t.bbss; b.heli=t.heli; b.bbssMode='simple'; b.lines={};
+}
+function fresh(){
+  b={region:'Valparaíso',tipo:'Brigada de Línea',plan:'Base',jornada:'Diurna',nombre:'',m2s:3,m1s:4,asig:0};
+  loadTemplate(b.tipo); editId=null;
+}
+
+/* ---- render ---- */
+function segHTML(opts,val,id){ return opts.map(o=>`<button data-seg="${id}" data-val="${o}" class="${o===val?'on':''}">${o}</button>`).join(''); }
+
+function paintCost(){
+  const c=calc(b);
+  const seg=(k,v)=>`<div class="seg"><div class="k">${k}</div><div class="v">M$ ${M(v)}</div></div>`;
+  let warnHtml='';
+  if(c.warn.length) warnHtml=`<div class="warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.4 3.9a2 2 0 00-3.4 0z"/></svg><div>${c.warn.join('. ')}</div></div>`;
+  $('cost').innerHTML=`
+    <div class="lbl">Costo de la brigada · temporada</div>
+    <div class="big">M$ ${M(c.total)}</div>
+    <div class="split">${seg('Jornales',c.jornal)}${seg('Bienes y servicios',c.bbss)}</div>
+    <div class="split" style="margin-top:8px">${seg('2.° sem 2026',c.total2S)}${seg('1.er sem 2027',c.total1S)}</div>
+    <div class="meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 7v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7z"/></svg>${c.dotTotal} personas · zona ${c.zona} · ${b.heli?'heliataque':'estándar'} · ${b.jornada.toLowerCase()}</div>
+    ${warnHtml}`;
+}
+
+function paintDotBody(){
+  const zona=zonaDe(b.region);
+  let html='<div class="dgrid">';
+  for(const c of CARGOS){
+    const dot=Number(b.dot?.[c.k]||0);
+    const tar=tarifaDe(zona,b.jornada,b.heli,c.tarifa);
+    const miss=dot>0&&tar==null;
+    html+=`<div class="drow ${miss?'miss':''}">
+      <div class="nm">${c.label}${c.sub?`<small>${c.sub}</small>`:''}</div>
+      <div class="stp">
+        <button data-dstep="${c.k}" data-d="-1" aria-label="menos">−</button>
+        <input data-din="${c.k}" type="number" min="0" value="${dot}">
+        <button data-dstep="${c.k}" data-d="1" aria-label="más">+</button>
+      </div></div>`;
+  }
+  html+='</div>';
+  const tot=CARGOS.reduce((s,c)=>s+Number(b.dot?.[c.k]||0),0);
+  html+=`<div class="dtot"><span>Total dotación</span><b>${tot} personas</b></div>`;
+  $('dotBody').innerHTML=html;
+  wireDot();
+}
+function paintDotSummary(){
+  const items=CARGOS.filter(c=>Number(b.dot?.[c.k]||0)>0).map(c=>`${c.label.replace('Brigadista ','').replace('Op. ','')} ${b.dot[c.k]}`);
+  const tot=CARGOS.reduce((s,c)=>s+Number(b.dot?.[c.k]||0),0);
+  $('dotSummary').textContent = `${tot} personas — ${items.slice(0,5).join(', ')}${items.length>5?'…':''}`;
+}
+function paintBbssBody(){
+  let html='<div class="bgrid">';
+  for(const [k,lbl] of BBSS_LINES){
+    html+=`<div class="brow"><label>${lbl}</label><div class="num-in"><input class="ctrl" type="number" min="0" step="1" data-bin="${k}" value="${b.lines?.[k]||''}" placeholder="0"><span class="u">M$</span></div></div>`;
+  }
+  html+='</div><div class="hint">Si llenas el desglose, se usa la suma de estas líneas en vez del monto único.</div>';
+  $('bbssBody').innerHTML=html;
+  $('bbssBody').querySelectorAll('[data-bin]').forEach(inp=>inp.addEventListener('input',()=>{ b.lines=b.lines||{}; b.lines[inp.dataset.bin]=Number(inp.value||0); b.bbssMode='detalle'; paintCost(); }));
+}
+
+function syncInputs(){
+  $('nombre').value=b.nombre||'';
+  $('region').value=b.region; $('tipo').value=b.tipo;
+  $('planSeg').innerHTML=segHTML(['Base','Fortalecimiento'],b.plan,'plan');
+  $('jornadaSeg').innerHTML=segHTML(['Diurna','Nocturna'],b.jornada,'jornada');
+  $('heli').checked=!!b.heli;
+  $('bbssSimple').value=b.bbssSimple??''; $('asig').value=b.asig||0;
+  $('m2s').value=b.m2s??''; $('m1s').value=b.m1s??'';
+  wireSeg();
+  paintDotSummary(); paintDotBody(); paintBbssBody(); paintCost();
+  $('saveLbl').textContent = editId ? 'Guardar cambios' : 'Guardar y empezar otra';
+}
+
+/* ---- wiring ---- */
+function wireSeg(){
+  document.querySelectorAll('[data-seg]').forEach(btn=>btn.onclick=()=>{
+    b[btn.dataset.seg]=btn.dataset.val;
+    document.querySelectorAll(`[data-seg="${btn.dataset.seg}"]`).forEach(x=>x.classList.toggle('on',x===btn));
+    paintDotBody(); paintCost();
+  });
+}
+function wireDot(){
+  $('dotBody').querySelectorAll('[data-dstep]').forEach(btn=>btn.onclick=()=>{
+    const k=btn.dataset.dstep; b.dot[k]=Math.max(0,Number(b.dot[k]||0)+Number(btn.dataset.d));
+    paintDotBody(); paintDotSummary(); paintCost();
+  });
+  $('dotBody').querySelectorAll('[data-din]').forEach(inp=>inp.addEventListener('input',()=>{
+    b.dot[inp.dataset.din]=Math.max(0,Number(inp.value||0)); paintDotSummary(); paintCost();
+  }));
+}
+
+function fold(headId,foldId){ $(headId).onclick=()=>$(foldId).classList.toggle('open'); }
+fold('dotHead','dotFold'); fold('bbssHead','bbssFold');
+
+$('region').innerHTML=REGIONES.map(r=>`<option>${r}</option>`).join('');
+$('tipo').innerHTML=TIPOS.map(t=>`<option>${t}</option>`).join('');
+$('region').addEventListener('change',()=>{ b.region=$('region').value; paintDotBody(); paintCost(); });
+$('tipo').addEventListener('change',()=>{ b.tipo=$('tipo').value; loadTemplate(b.tipo); $('heli').checked=!!b.heli; $('bbssSimple').value=b.bbssSimple; paintDotSummary(); paintDotBody(); paintBbssBody(); paintCost(); });
+$('heli').addEventListener('change',()=>{ b.heli=$('heli').checked; paintDotBody(); paintCost(); });
+$('nombre').addEventListener('input',()=>b.nombre=$('nombre').value);
+['bbssSimple','asig','m2s','m1s'].forEach(id=>$(id).addEventListener('input',()=>{
+  if(id==='bbssSimple'){ b.bbssSimple=Number($(id).value||0); b.bbssMode='simple'; }
+  else b[id]=Number($(id).value||0);
+  paintCost();
+}));
+
+/* ---- saved list ---- */
+function renderSaved(){
+  if(saved.length===0){ $('saved').style.display='none'; return; }
+  $('saved').style.display='';
+  let tot=0;
+  $('savedList').innerHTML=saved.map(s=>{
+    const c=calc(s); tot+=c.total;
+    return `<div class="srow">
+      <div class="nm"><div class="t">${s.nombre||'(sin nombre)'}</div><div class="s">${s.region} · ${s.tipo} · ${c.dotTotal} pers · ${(Number(s.m2s)+Number(s.m1s)).toFixed(1)} meses</div></div>
+      <div style="text-align:right"><div class="v">M$ ${M(c.total)}</div><div class="mini">J ${M(c.jornal)} · B ${M(c.bbss)}</div></div>
+      <button class="edit" data-edit="${s._id}" aria-label="editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4z"/></svg></button>
+      <button class="x" data-del="${s._id}" aria-label="eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>`;
+  }).join('');
+  $('savedTot').textContent='M$ '+M(tot);
+  $('savedList').querySelectorAll('[data-del]').forEach(x=>x.onclick=()=>{ saved=saved.filter(s=>s._id!=x.dataset.del); renderSaved(); toast('Brigada eliminada'); });
+  $('savedList').querySelectorAll('[data-edit]').forEach(x=>x.onclick=()=>{
+    const s=saved.find(s=>s._id==x.dataset.edit); b=JSON.parse(JSON.stringify(s)); editId=s._id; syncInputs(); window.scrollTo({top:0,behavior:'smooth'});
+  });
+}
+
+$('btnSave').onclick=()=>{
+  if(!b.nombre) b.nombre='Brigada '+(saved.length+1);
+  if(editId){ const i=saved.findIndex(s=>s._id===editId); saved[i]=Object.assign({},b,{_id:editId}); toast('Cambios guardados'); }
+  else { saved.push(Object.assign({},b,{_id:sid++})); toast('Brigada guardada — empieza otra'); }
+  renderSaved();
+  if(!editId){ const reg=b.region, tipo=b.tipo, plan=b.plan, jor=b.jornada, m2=b.m2s, m1=b.m1s; fresh(); b.region=reg; b.tipo=tipo; b.plan=plan; b.jornada=jor; loadTemplate(tipo); b.m2s=m2; b.m1s=m1; }
+  else editId=null;
+  syncInputs();
+};
+$('btnReset').onclick=()=>{ fresh(); syncInputs(); };
+
+$('btnExcel').onclick=()=>{
+  const rows=saved.map(s=>{ const c=calc(s); return {
+    Nombre:s.nombre, Región:s.region, Tipo:s.tipo, Plan:s.plan, Jornada:s.jornada, Modalidad:s.heli?'Heliataque':'Estándar',
+    Zona:c.zona, Personas:c.dotTotal, 'Meses 2°S':s.m2s, 'Meses 1°S':s.m1s,
+    'Jornal mensual M$':Math.round(c.jornalMensual), 'BBSS mensual M$':Math.round(c.bbssMensual), 'Asig. única M$':s.asig||0,
+    'Jornales M$':Math.round(c.jornal), 'BBSS M$':Math.round(c.bbss), 'TOTAL temporada M$':Math.round(c.total),
+    Anomalías:c.warn.join(' | ')
+  };});
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Brigadas');
+  XLSX.writeFile(wb,'Brigadas_costeo.xlsx'); toast('Excel exportado');
+};
+
+let tt; function toast(m){ const t=$('toast'); t.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>${m}`; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2400); }
+
+/* init */
+fresh(); syncInputs();
+</script>
+</body>
+</html>
