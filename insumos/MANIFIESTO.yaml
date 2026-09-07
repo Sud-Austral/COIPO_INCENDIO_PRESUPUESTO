@@ -1,0 +1,27 @@
+archivos:
+
+  - ruta: index.html
+    sha256: "[PENDIENTE] sin calcular"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "[VERIFICAR] no se detectaron patrones de dato personal en la evidencia extraida, pero la evidencia no llego al interior del archivo: el analizador no reconocio en el ninguna tecnologia, variable ni script, pese a que ocupa cerca de 32 kB. Un archivo de este tamano sin comportamiento detectable es, con alta probabilidad, contenido. Hay que abrirlo antes de responder"
+    puede_versionarse: "[VERIFICAR] queda en false si contiene_pii se confirma; el repositorio es publico, asi que la pregunta no es teorica"
+    uso: "Unico archivo de aplicacion del repositorio. Muestra algo en un navegador sin servidor detras. Que muestra es [PENDIENTE]."
+
+  - ruta: .github/workflows/readme.yml
+    sha256: "[PENDIENTE] sin calcular"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "no aplica: es un flujo de trabajo comun a la flota"
+    puede_versionarse: true
+    uso: "Instala la generacion automatica de documentacion. No es del proyecto: es de la flota."
+
+  - ruta: .gitattributes
+    sha256: "[PENDIENTE] sin calcular"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "no aplica"
+    puede_versionarse: true
+    uso: "Normaliza el tratamiento de archivos del repositorio."
+
+notas:
+  - "Ninguna entrada tiene resuelto el campo origen: en ningun repositorio esta escrito quien entrego un archivo ni cuando."
+  - "El manifiesto lista los tres archivos que hay. No falta ninguno."
+  - "Dos de los tres son infraestructura comun. La unica pregunta abierta de este repositorio es que contiene index.html, y de esa respuesta dependen tanto contiene_pii como puede_versionarse."
