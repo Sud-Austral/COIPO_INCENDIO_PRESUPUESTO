@@ -1,66 +1,29 @@
-# Que estaba roto, deducido de lo que se construyo
+# Problema: costear brigadas de incendios
 
-Aviso que hay que leer antes que nada: este repositorio tiene tres archivos.
-Uno es una pagina web, otro normaliza el tratamiento de archivos y el
-tercero instala el flujo de documentacion automatica. No hay codigo de
-servidor, ni base de datos, ni dependencias declaradas. La evidencia
-disponible casi no permite inferir nada, y este documento lo refleja: esta
-escrito entero, pero casi todo va marcado como [PENDIENTE].
+Actualizado el 2026-10-24 tras abrir y leer `index.html` (la versión anterior de este documento, generada por un analizador, decía que el contenido de la página era desconocido). Marcas: VERIFICADO (visto en el archivo), INFERIDO, `[PENDIENTE]` (lo confirma una persona del área). No ejecuté la página en un navegador.
 
-## El objeto del problema
+## Contexto
 
-[INFERIDO] Lo unico que el codigo aporta es que existe una pagina que se
-abre sola, sin servidor detras [index.html]. El nombre del repositorio
-apunta a presupuesto de incendios, pero un nombre no es evidencia y aca no
-se convierte en funcionalidad.
+INFERIDO del título y la marca de `index.html` («Costear una brigada», «SIFOP-IF · CONAF · GEPRIF») y del nombre del repositorio: CONAF debe presupuestar la temporada de incendios, y una pieza de ese presupuesto es el costo de cada brigada (personal y bienes y servicios). Qué significan SIFOP-IF y GEPRIF y quién pidió la herramienta: `[PENDIENTE]`.
 
-Que problema se estaba resolviendo: [PENDIENTE]. La pagina tiene contenido
-—ocupa cerca de 32 kB, que es mucho para una pagina vacia— y ahi estaria la
-respuesta, pero la evidencia extraida no llega a su interior: el analizador
-no detecto en ella ninguna tecnologia, ninguna variable, ningun endpoint y
-ningun script. O el contenido esta escrito de una forma que el analizador no
-reconoce, o es texto y tablas sin comportamiento.
+## Qué dolor resuelve (INFERIDO)
 
-## Quien sufre el problema
+Armar el costo de una brigada exige combinar un tarifario de remuneraciones mensuales por cargo (según zona, jornada y tipo de brigada), una dotación típica, bienes y servicios mensuales repartidos en líneas del subtítulo 22, y los meses operativos del segundo semestre de 2026 y primero de 2027. La página trae todo precargado para que el usuario solo elija tipo y meses. Cómo se hacía antes (planilla, otra herramienta): `[PENDIENTE]`.
 
-[PENDIENTE]. No hay guardas, ni decoradores de autorizacion, ni tabla de
-permisos, ni ingreso: no hay codigo de servidor donde pudiera haberlos. Una
-pagina que se abre sola no distingue quien la abre.
+## Usuarios
 
-CUANTAS PERSONAS la usan: [PENDIENTE].
-Que area la mantiene: [PENDIENTE].
-Si esta publicada en alguna parte o se abre desde un archivo local:
-[PENDIENTE].
+`[PENDIENTE]` quiénes y cuántos. El texto de la página («Todo lo demás viene precargado — tócalo solo si cambia») sugiere personas que no son especialistas en el tarifario.
 
-## Como lo resolvian antes
+## Alcance (VERIFICADO)
 
-[PENDIENTE]. No hay importador, ni lector de planilla, ni endpoint de carga,
-ni columna que replique una hoja de calculo. El codigo no dice nada del
-metodo anterior.
+- Costear una brigada por región (16), tipo (línea, mixta, helitransportada, recurso cisterna), plan (base o fortalecimiento), jornada (diurna o nocturna) y heliataque sí o no.
+- Editar dotación por 13 cargos y bienes y servicios (monto único o 14 líneas).
+- Guardar varias brigadas, ver el total de temporada y exportar a Excel.
 
-## Que pasa si no se hace nada
+## Fuera de alcance (VERIFICADO por ausencia en el código)
 
-[PENDIENTE], sin excepcion.
+Persistencia, usuarios o roles, conexión con sistemas institucionales, validación contra el presupuesto oficial.
 
-## Volumen
+## Criterios de éxito
 
-[PENDIENTE]. No hay tablas, ni indices, ni paginacion, ni tipos de columna:
-no hay ningun indicio de volumen en la evidencia. Si la pagina lleva datos
-dentro, el volumen es el que quepa en el archivo, y eso es una observacion
-sobre el archivo, no sobre el negocio.
-
-## Quien decide que esta terminado
-
-[PENDIENTE], sin excepcion.
-
-## Marco normativo
-
-[VERIFICAR] Un archivo de pagina que se distribuye solo puede llevar datos
-dentro. Si esos datos incluyen presupuesto asignado, nombres o unidades
-identificables, la pagina es el dato y no solo su envoltorio. Hay que
-abrirla antes de responder cualquier pregunta sobre esto, y este documento
-no la abrio.
-
-[VERIFICAR] El repositorio es publico. Si el contenido de la pagina es
-informacion presupuestaria interna, esa es la primera pregunta que hay que
-resolver, antes que cualquier otra sobre el sistema.
+No constan en el repositorio. Que las cifras coincidan con el presupuesto oficial o con la planilla de origen: `[PENDIENTE]`, no lo comprobé. Origen y vigencia del tarifario «26-27» embebido: `[PENDIENTE]`.

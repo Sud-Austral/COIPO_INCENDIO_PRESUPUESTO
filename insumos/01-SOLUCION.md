@@ -1,73 +1,38 @@
-# Que se construyo
+# Solución: calculadora de una sola página
 
-## Lo primero: aca el analizador no ve casi nada
+Actualizado el 2026-10-24 tras leer `index.html` completo. No lo ejecuté en un navegador ni verifiqué los cálculos con casos. Marcas: VERIFICADO (visto en el código), INFERIDO, `[PENDIENTE]`.
 
-Este repositorio tiene tres archivos: una pagina web [index.html], la
-normalizacion del tratamiento de archivos [.gitattributes] y el flujo de
-documentacion automatica [.github/workflows/readme.yml].
+## Arquitectura (VERIFICADO)
 
-En un repositorio con servidor, este documento seria el mas largo de los
-tres y llevaria citas densas, porque el codigo es la solucion. Aca no. El
-analizador no detecto ninguna tecnologia, ninguna dependencia, ninguna
-variable de entorno, ninguna ruta expuesta, ninguna tabla y ningun comando.
-No es que el sistema no tenga esas cosas: es que la evidencia no llega.
+Un único archivo `index.html` con estilos, marcado y JavaScript. Sin servidor, sin base de datos, sin build, sin variables de entorno. Recursos externos: SheetJS `xlsx` 0.18.5 desde cdnjs y fuentes de Google Fonts. El estado vive en memoria (`b` para la brigada en edición, `saved` para las guardadas) y se pierde al recargar.
 
-Decirlo es el resultado util de esta corrida. Todo lo que sigue esta
-[PENDIENTE] y solo lo puede cerrar una persona que abra la pagina o que
-sepa para que se hizo.
+## Componentes
 
-## Que hace
+| Pieza | Qué hace |
+|---|---|
+| Catálogos | `REGIONES` (16), `TIPOS` (4), `CARGOS` (13), `BBSS_LINES` (14 líneas del subtítulo 22), `TEMPLATES` (dotación y bienes y servicios de referencia por tipo) |
+| `TARIFARIO` | Tarifas mensuales ($) por zona, jornada y clase (estándar o heliataque) para cada cargo; etiquetado «tarifario real 26-27» en el código |
+| `zonaDe`, `tarifaDe` | Elige la zona (Aysén y Magallanes: «PALENA, XI y XII»; resto: «XV a X, RM y OC») y busca la tarifa de un cargo; sin tarifa nocturna de heliataque cae a estándar |
+| `calc(b)` | Jornal mensual, bienes y servicios, totales por semestre y de temporada, advertencias de cargos sin tarifa |
+| Render y eventos | Tarjeta de costo, formulario, dotación con botones +/−, desglose de bienes y servicios, lista de brigadas guardadas |
+| Exportación | Hoja «Brigadas» a `Brigadas_costeo.xlsx` con SheetJS |
 
-[INFERIDO] Muestra algo en un navegador, sin servidor y sin base de datos
-[index.html]. Es la unica capacidad afirmable.
+## Flujo de datos
 
-Que muestra, con que datos y con que interaccion: [PENDIENTE].
-Si calcula algo o solo presenta: [PENDIENTE].
-Si los datos estan dentro del archivo o se cargan de otro lado: [PENDIENTE].
+Selecciones del usuario → objeto `b` → `calc(b)` → tarjeta de costo (se repinta en cada cambio). «Guardar» copia `b` a `saved`; «Exportar» calcula cada brigada guardada y genera el Excel.
 
-## Roles: quien ve que
+## Fórmula (VERIFICADO)
 
-No hay roles. No hay guardas, decoradores de autorizacion ni tabla de
-permisos, y no hay codigo de servidor donde pudieran vivir. Quien abre el
-archivo lo ve entero.
+Total = (jornal mensual + bienes y servicios mensuales) x (meses 2.° semestre + meses 1.er semestre) + asignación única. Los valores están en M$ (miles de pesos); el jornal divide por 1.000 las tarifas en pesos.
 
-Quien puede abrirlo: [PENDIENTE]. Depende de donde este publicado, y eso no
-esta en el repositorio.
+## Decisiones visibles
 
-## De donde salen los datos
+- Todo en un archivo para que se abra sin infraestructura.
+- Plantillas por tipo de brigada «editables» para reducir el ingreso de datos.
+- Los datos no se envían a ningún servidor (no hay llamadas de red propias).
 
-[PENDIENTE]. No hay conexion externa detectada, no hay API consumida, no hay
-migraciones y no hay archivo semilla. Si la pagina lleva datos, salieron de
-alguna parte y esa parte no esta versionada aca.
+## Estado actual y pendientes
 
-QUIEN ES DUENO de esos datos: [PENDIENTE].
-
-## Que NO hace
-
-Las ausencias siguientes se afirman porque el analizador enumero esas
-categorias completas sobre los tres archivos. Siguen marcadas.
-
-[INFERIDO] No expone ninguna ruta: la enumeracion de endpoints esta vacia.
-
-[INFERIDO] No tiene base de datos: la enumeracion de tablas esta vacia.
-
-[INFERIDO] No declara ninguna dependencia: no hay manifiesto de paquetes de
-ningun tipo en los tres archivos del repositorio.
-
-[INFERIDO] No lee ninguna variable de entorno: la enumeracion esta vacia.
-
-[INFERIDO] No tiene pruebas: no hay archivo de prueba entre los tres.
-
-## Iteraciones
-
-[INFERIDO] La unica huella de proceso es el flujo de documentacion
-automatica [.github/workflows/readme.yml], que es comun a la flota y no dice
-nada de este proyecto en particular. No hay etiquetas, ni CHANGELOG, ni
-migraciones numeradas.
-
-## Lo que hay que hacer con este documento
-
-Abrir [index.html] y leerlo. Con eso, los tres documentos se pueden
-reescribir enteros y con contenido real. Sin eso, este es todo el
-conocimiento que el analizador puede producir, y es honesto decir que es
-poco.
+- Funcional según lectura del código; sin pruebas automáticas.
+- `[PENDIENTE]` origen y vigencia del tarifario y de las plantillas de dotación; dónde está publicada; quién la mantiene; si el campo «Plan» (Base o Fortalecimiento) debe cambiar el cálculo (hoy solo se guarda y se exporta, no entra a `calc`; VERIFICADO).
+- `insumos/MANIFIESTO.yaml` sigue con las marcas del analizador anterior (por ejemplo, dice que el contenido de `index.html` es desconocido); conviene regenerarlo.
