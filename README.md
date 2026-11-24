@@ -11,9 +11,8 @@ HTML + CSS + JavaScript sin framework, sin build y sin `package.json`. Dos recur
 ## Estructura
 
 ```
-index.html                    toda la aplicación (estilos, catálogos, tarifario y motor de cálculo)
-insumos/                      problema, solución y manifiesto de datos
-.github/workflows/readme.yml  workflow compartido de la flota que regenera documentación
+index.html   toda la aplicación (estilos, catálogos, tarifario y motor de cálculo)
+insumos/     problema, solución y manifiesto de datos
 ```
 
 ## Cómo usarlo
@@ -31,6 +30,8 @@ Flujo en pantalla: el costo se recalcula al cambiar cualquier campo; «Guardar y
 - Los datos no se guardan: la lista vive solo en memoria y se pierde al recargar la página.
 
 ## Configuración y despliegue
+
+No hay workflows de GitHub Actions: el generador de README (`readme.yml`) se quitó el 2026-10-25 (commit 28c0198); este README se edita a mano.
 
 Sin variables de entorno. No consta en el repositorio dónde está publicada la página: pendiente de confirmar por el equipo.
 

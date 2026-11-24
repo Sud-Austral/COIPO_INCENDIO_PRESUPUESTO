@@ -5,8 +5,8 @@ Guía para agentes. Calculadora de costo de brigadas de incendios en un único `
 ## Estructura
 
 - `index.html`: contiene todo. De arriba abajo: `<style>` (tokens CSS en `:root`), marcado de la tarjeta, y un `<script>` con catálogos (`REGIONES`, `TIPOS`, `CARGOS`, `BBSS_LINES`, `TEMPLATES`), el tarifario (`TARIFARIO`), el motor (`zonaDe`, `tarifaDe`, `calc`), el estado (`b`, `saved`) y el render/wiring.
-- `insumos/`: documentos de problema y solución, y `MANIFIESTO.yaml` (generado por un analizador; ver abajo).
-- `.github/workflows/readme.yml`: workflow compartido de la flota; no editar.
+- `insumos/`: documentos de problema y solución, y `MANIFIESTO.yaml` (lo generó un analizador; ver abajo).
+- No hay `.github/workflows/`: el `readme.yml` compartido (generador `coipo_aireadme`) se quitó en el commit 28c0198; el README se mantiene a mano.
 
 ## Comandos
 
@@ -30,5 +30,9 @@ No hay. Para probar: abrir `index.html` en el navegador (requiere internet por S
 ## Qué no tocar
 
 - Los valores del tarifario sin una fuente oficial citada.
-- `insumos/MANIFIESTO.yaml`: lo genera el flujo de documentación; sus marcas `[PENDIENTE]` / `[VERIFICAR]` las cierra una persona.
+- `insumos/MANIFIESTO.yaml`: lo generó el flujo de documentación (ya retirado del repo); sus marcas `[PENDIENTE]` / `[VERIFICAR]` las cierra una persona.
 - Nunca agregar datos personales ni credenciales al archivo: el repositorio es público según el propio manifiesto.
+
+## Estado comprobado (2026-11-24)
+
+Comprobado con `grep` sobre `index.html`: existen los símbolos citados arriba y no hay uso de `localStorage`. No comprobado: el render en navegador ni los cálculos.
